@@ -13,12 +13,10 @@ import feedparser
 import re
 import time
 import datetime
-import pygame
+import subprocess
 from bcolors import bcolors
 
 def main():
-	pygame.init()
-	pygame.mixer.init()
 	prev_state = {}
 	current_state = {}
 	rss_url="http://teamcity.bridgepoint.local/guestAuth/feed.html?projectId=project4&buildTypeId=bt18&buildTypeId=bt24&buildTypeId=bt12&buildTypeId=bt14&buildTypeId=bt9&buildTypeId=bt6&buildTypeId=bt19&buildTypeId=bt22&buildTypeId=bt20&buildTypeId=bt13&buildTypeId=bt11&buildTypeId=bt10&projectId=project3&buildTypeId=bt5&buildTypeId=bt21&itemsType=builds&buildStatus=successful&buildStatus=failed&userKey=guest"
@@ -33,15 +31,25 @@ def main():
 				notify(key,prev_state[key],value) 
 		prev_state = current_state
 		time.sleep(10)
+
+def play_text(txt):
+        subprocess.call('echo '+txt+' | festival --tts',shell=True)
 				
-		
+def play_mp3(paths):
+	for path in paths:
+		subprocess.call("mpg123 "+path,shell=True)
+			
 def notify(build,prev,curr):
 	if prev == 'failed' and curr == "passed":
-		print bcolors.OKBLUE + build +' status changed from failed to passed'
+		good_status = build +' status changed from failed to passed'
+		print bcolors.OKBLUE + good_status
 		play_good()
+		play_text(good_status)
 	else:
-		print bcolors.FAIL + build +' status changed from passed to failed'
+		failed_status = build +' status changed from passed to failed'
+		print bcolors.FAIL + failed_status
 		play_bad()
+		play_text(failed_status)
 	
 		
 def get_latest(sorted_entries):
@@ -78,28 +86,19 @@ def get_sorted_entries(rss_url):
 	
 def play_bad():	
 	paths = []
-	paths.append('sounds/pacman_dies_y.ogg')
-	paths.append('sounds/break_x.ogg')
-	play_sounds(paths)
+	paths.append('sounds/BabyCry.mp3')
+	play_mp3(paths)
 
 def play_good():
 	paths = []
-	paths.append('sounds/mission_succ.ogg')
-	paths.append('sounds/objective_comp.ogg')
-	paths.append('sounds/good_bad_ugly.ogg')
-	play_sounds(paths)
+	paths.append('sounds/Dijjeridoo.mp3')
+	play_mp3(paths)
 
 def play_sounds(paths):
 	for path in paths:
 		play_sound(path)
 
-def play_sound(path):
-	sounda = pygame.mixer.Sound(path)
-	channela = sounda.play()
-	while channela.get_busy():
-		pygame.time.delay(100)
 		
 if __name__ == '__main__':
 	main()
-
 
